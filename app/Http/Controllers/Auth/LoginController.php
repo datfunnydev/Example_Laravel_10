@@ -24,7 +24,7 @@ class LoginController extends Controller
     public function index(): View|RedirectResponse
     {
         if (Auth::check()) {
-            return redirect('/roles');
+            return redirect('/');
         }
 
         return view('layout.auth');
@@ -43,7 +43,7 @@ class LoginController extends Controller
         }
         $this->user->update(Auth::id(), ['last_login_at' => Carbon::now()]);
 
-        return $this->success(data: '/');
+        return $this->success(data: '/roles');
     }
 
     public function logout(): RedirectResponse
