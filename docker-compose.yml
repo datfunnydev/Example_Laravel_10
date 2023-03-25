@@ -1,28 +1,33 @@
 version: "3"
 
 services:
-  workspace:
+  webserver:
     build:
       context: .
       dockerfile: ./docker/Dockerfile
-    container_name: miduner_framework
+    container_name: php_81
+    platform: linux/arm64
     working_dir: /var/www/html
     ports:
-      - "80:80"
+      - "8000:8000"
     volumes:
         - .:/var/www/html
         - ./docker/nginx_log:/var/log/nginx
         - ./docker/php-fpm/php-fpm.log:/var/log/php-fpm.log
         - ./docker/config/app.conf:/etc/nginx/conf.d/app.conf
-    links: 
+    links:
         - mysql
 
   mysql:
-    image: mysql:5.6
-    container_name: miduner_mysql
+    image: mysql:8.0
+    platform: linux/arm64
+    container_name: mysql_80
     ports:
-      - "3306:3306"
+      - "3308:3306"
     volumes:
       - ./docker/mysql:/var/lib/mysql
     environment:
-      MYSQL_ROOT_PASSWORD: password  
+     - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
+     - MYSQL_USER=${DB_USERNAME}
+     - MYSQL_PASSWORD=${DB_PASSWORD}
+     - MYSQL_DATABASE=${DB_DATABASE}
