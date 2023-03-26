@@ -5,29 +5,27 @@ services:
     build:
       context: .
       dockerfile: ./docker/Dockerfile
-    container_name: php_81
+    container_name: nginx_php
     platform: linux/arm64
     working_dir: /var/www/html
     ports:
       - "8000:8000"
     volumes:
-        - .:/var/www/html
-        - ./docker/nginx_log:/var/log/nginx
-        - ./docker/php-fpm/php-fpm.log:/var/log/php-fpm.log
-        - ./docker/config/app.conf:/etc/nginx/conf.d/app.conf
+      - .:/var/www/html
+      - ./docker/logs/nginx:/var/log/nginx
+      - ./docker/logs/php-fpm/php-fpm.log:/var/log/php-fpm.log
+      - ./docker/config/app.conf:/etc/nginx/conf.d/app.conf
+      - ./docker/config/custom.ini:/usr/local/etc/php/conf.d/custom.ini
     links:
-        - mysql
+      - database
 
-  mysql:
+  database:
     image: mysql:8.0
     platform: linux/arm64
-    container_name: mysql_80
+    container_name: mysql
     ports:
       - "3308:3306"
     volumes:
-      - ./docker/mysql:/var/lib/mysql
+      - ./docker/data/mysql:/var/lib/mysql
     environment:
-     - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
-     - MYSQL_USER=${DB_USERNAME}
-     - MYSQL_PASSWORD=${DB_PASSWORD}
-     - MYSQL_DATABASE=${DB_DATABASE}
+      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
