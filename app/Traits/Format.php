@@ -54,21 +54,25 @@ trait Format
         return $n_format.$suffix;
     }
 
-    public function int_val($n): int
+    public function string2int(string $n): int
     {
         if (! $n) {
             $n = 0;
         }
-        if (is_string($n)) {
-            $str = ['%', 's', ','];
-            foreach ($str as $s) {
-                if (str_contains($n, $s)) {
-                    $n = str_replace($s, '', $n);
-                }
-            }
-        }
+        $special_chars = ['%', 's', ',', '$', '+', '-'];
+        $n = str_replace($special_chars, '', $n);
 
         return intval($n);
+    }
+
+    public function string2bool(string $str): string|null
+    {
+        $str = strtolower($str);
+        if ($str == 'true' || $str == 'false') {
+            return $str;
+        }
+
+        return null;
     }
 
     public function string2slug(string $str): string
