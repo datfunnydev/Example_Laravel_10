@@ -19,13 +19,23 @@ trait Format
         return Carbon::parse($date)->format($format);
     }
 
-    public function text_format_short(string $text, int $limit = 400): string
+    public function text_format_short(string $text, int $limit = 400, bool $strip_tags = true, string $ellipsis = '...'): string
     {
-        $text = $text.' ';
-        $text = substr($text, 0, $limit);
-        $text = substr($text, 0, strrpos($text, ' '));
+        if ($strip_tags) {
+            $text = strip_tags($text);
+        }
 
-        return $text.'...';
+        if (mb_strlen($text, 'UTF-8') <= $limit) {
+            return $text;
+        }
+
+        $text = mb_substr($text, 0, $limit, 'UTF-8');
+        $last_space_pos = mb_strrpos($text, ' ', 0, 'UTF-8');
+        if ($last_space_pos !== false) {
+            $text = mb_substr($text, 0, $last_space_pos, 'UTF-8');
+        }
+
+        return $text.$ellipsis;
     }
 
     public function number_format_short(float $n, int $precision = 1): string
