@@ -95,13 +95,6 @@ trait Helper
         return true;
     }
 
-    public function is_json($string): bool
-    {
-        json_decode($string);
-
-        return json_last_error() === JSON_ERROR_NONE;
-    }
-
     public function calc_percent($present = 0, $past = 0): string
     {
         if ($present <= 0 && $past <= 0) {

@@ -28,30 +28,23 @@ trait Format
         return $text.'...';
     }
 
-    public function number_format_short(int $n, int $precision = 1): string
+    public function number_format_short(float $n, int $precision = 1): string
     {
-        if ($n < 900) {
-            $n_format = number_format($n, $precision);
-            $suffix = '';
-        } elseif ($n < 900000) {
-            $n_format = number_format($n / 1000, $precision);
-            $suffix = 'K';
-        } elseif ($n < 900000000) {
-            $n_format = number_format($n / 1000000, $precision);
-            $suffix = 'M';
-        } elseif ($n < 900000000000) {
-            $n_format = number_format($n / 1000000000, $precision);
-            $suffix = 'B';
-        } else {
-            $n_format = number_format($n / 1000000000000, $precision);
-            $suffix = 'T';
-        }
-        if ($precision > 0) {
-            $dot_zero = '.'.str_repeat('0', $precision);
-            $n_format = str_replace($dot_zero, '', $n_format);
+        $suffixes = ['', 'K', 'M', 'B', 'T', 'Q'];
+        $suffixIndex = 0;
+
+        while (abs($n) >= 1000 && $suffixIndex < count($suffixes) - 1) {
+            $n /= 1000;
+            $suffixIndex++;
         }
 
-        return $n_format.$suffix;
+        $n_format = number_format($n, $precision);
+        if ($precision > 0) {
+            $n_format = rtrim($n_format, '0');
+            $n_format = rtrim($n_format, '.');
+        }
+
+        return $n_format . $suffixes[$suffixIndex];
     }
 
     public function string2int(string $n): int
@@ -104,18 +97,12 @@ trait Format
     public function json2array($data = ''): array
     {
         try {
-            if (! $data) {
+            $decoded_data = json_decode($data, true, 512, JSON_THROW_ON_ERROR);
+            if (! is_array($decoded_data)) {
                 return [];
-            }
-            if (! $this->is_json($data)) {
-                return [];
-            }
-            $tmp = json_decode(json_encode($data, true), true);
-            if (! is_array($tmp)) {
-                $tmp = json_decode($tmp, true);
             }
 
-            return $tmp;
+            return $decoded_data;
         } catch (Exception) {
         }
 
@@ -124,9 +111,6 @@ trait Format
 
     public function json2string($data = '', $type = 'value'): string
     {
-        if (! $this->is_json($data)) {
-            return '';
-        }
         $keywords = '';
         $array = $this->json2array($data);
         foreach ($array as $key) {
