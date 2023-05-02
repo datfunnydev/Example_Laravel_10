@@ -87,7 +87,9 @@
     $.fn.datepicker.defaults.rtl = KTUtil.isRTL();
     $.fn.datepicker.defaults.todayHighlight = true;
     @if(config('app.debug') == 'false')
-        $.fn.dataTable.ext.errMode = 'none';
+        try {
+            $.fn.dataTable.ext.errMode = 'none';
+        } catch(error) {}
     @endif
     $(document).ajaxError(function(event, jqxhr) {
         if (jqxhr.status === 401) {

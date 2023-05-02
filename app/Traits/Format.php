@@ -54,7 +54,7 @@ trait Format
             $n_format = rtrim($n_format, '.');
         }
 
-        return $n_format . $suffixes[$suffixIndex];
+        return $n_format.$suffixes[$suffixIndex];
     }
 
     public function string2int(string $n): int
@@ -107,9 +107,9 @@ trait Format
     public function json2array($data = ''): array
     {
         try {
-            $decoded_data = json_decode($data, true, 512, JSON_THROW_ON_ERROR);
+            $decoded_data = json_decode(json_encode($data, true), true);
             if (! is_array($decoded_data)) {
-                return [];
+                $decoded_data = json_decode($decoded_data, true);
             }
 
             return $decoded_data;
