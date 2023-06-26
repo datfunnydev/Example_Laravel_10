@@ -86,14 +86,13 @@ abstract class BaseRepository
         }
     }
 
-    public function createMultiple(array $data): Collection
+    public function createMultiple(array $data): bool|int
     {
-        $models = new Collection();
-        foreach ($data as $value) {
-            $models->push($this->create($value));
+        try {
+            return $this->query()->insertOrIgnore($data);
+        } catch (Exception) {
+            return false;
         }
-
-        return $models;
     }
 
     public function update(string|int $id, array $data): bool

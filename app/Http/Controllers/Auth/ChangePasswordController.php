@@ -27,7 +27,7 @@ class ChangePasswordController extends Controller
     public function update(ChangePassRequest $request): JsonResponse
     {
         $input = $request->all();
-        if (isset(Auth::user()->password) && ! Hash::check(Auth::user()->password, $input['old_password'])) {
+        if (isset(Auth::user()->password) && ! Hash::check($input['old_password'], Auth::user()->password)) {
             return $this->error('Vui lòng kiểm tra lại mật khẩu cũ');
         }
         $this->user->update(Auth::id(), [
