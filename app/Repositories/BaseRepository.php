@@ -77,6 +77,18 @@ abstract class BaseRepository
         return $this->query()->where($column, '=', $value)->pluck($columns);
     }
 
+    public function getByChunk(string $columns = '*'): array
+    {
+        $array = [];
+        $this->query()->select($columns)->chunk(1000, function ($items) use (&$array) {
+            foreach ($items as $item) {
+                $array[] = $item->toArray();
+            }
+        });
+
+        return $array;
+    }
+
     public function create(array $data): Model|bool
     {
         try {
