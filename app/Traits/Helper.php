@@ -4,36 +4,29 @@ namespace App\Traits;
 
 use Exception;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\LazyCollection;
+use League\Csv\Reader;
 
 trait Helper
 {
     public function read_file_csv($file): JsonResponse
     {
         try {
-            $ext = pathinfo($file->getClientOriginalName(), PATHINFO_EXTENSION);
-            if ($ext !== 'csv') {
+            $mime = $file->getClientMimeType();
+            if ($mime !== 'text/csv') {
                 return $this->error('Vui lòng kiểm tra lại file excel');
             }
-            $data = [];
-            if (($handle = fopen($file, 'r')) !== false) {
-                $max_line_length = defined('MAX_LINE_LENGTH') ?? 10000;
-                $header = fgetcsv($handle, $max_line_length);
-                $header_colcount = count($header);
-                while (($row = fgetcsv($handle, $max_line_length)) !== false) {
-                    $row_colcount = count($row);
-                    if ($row_colcount == $header_colcount) {
-                        $entry = array_combine($header, $row);
-                        $data[] = $entry;
-                    }
-                }
-                fclose($handle);
-            }
+            $path = $file->store('temp');
+            $csv = Reader::createFromPath(Storage::path($path));
+            $csv->setHeaderOffset(0);
+            $data = LazyCollection::make(static fn () => yield from $csv->getRecords())->toArray();
+            Storage::delete($path);
 
             return $this->success(data: $data);
         } catch (Exception) {
+            return $this->error();
         }
-
-        return $this->error();
     }
 
     public function move_file($file_name, $new_name, $path, $file): JsonResponse
