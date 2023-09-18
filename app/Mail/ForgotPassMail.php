@@ -17,6 +17,7 @@ class ForgotPassMail implements ShouldQueue
 
     public function __construct(array $data)
     {
+        $this->onQueue('ForgotPassMail');
         $this->data = $data;
     }
 

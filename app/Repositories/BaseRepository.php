@@ -7,6 +7,7 @@ use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 
 abstract class BaseRepository
 {
@@ -52,7 +53,7 @@ abstract class BaseRepository
         return $this->query()->whereKeyNot($id)->where($column, '=', $value)->first();
     }
 
-    public function findMany(array $ids, array $columns = ['*']): Collection|null
+    public function findMany(array $ids, array $columns = ['*']): ?Collection
     {
         return $this->query()->findMany($ids, $columns);
     }
@@ -60,6 +61,11 @@ abstract class BaseRepository
     public function findColumn(string $column, string $value, array $columns = ['*']): Model|Builder|null
     {
         return $this->query()->where($column, '=', $value)->first($columns);
+    }
+
+    public function findForUser(string|int $id, array $columns = ['*']): Model|Builder|null
+    {
+        return $this->query()->whereKey($id)->where('user_id', '=', Auth::id())->first($columns);
     }
 
     public function exitsColumn(string $column, string $value): bool
@@ -72,12 +78,12 @@ abstract class BaseRepository
         return $this->query()->whereKeyNot($id)->where($column, '=', $value)->exists();
     }
 
-    public function getColumn(string $column, string $value, array $columns = ['*']): Collection|null
+    public function getColumn(string $column, string $value, array $columns = ['*']): ?Collection
     {
         return $this->query()->where($column, '=', $value)->pluck($columns);
     }
 
-    public function getByChunk(string $columns = '*'): array
+    public function getByChunk(array $columns = ['*']): array
     {
         $array = [];
         $this->query()->select($columns)->chunk(1000, function ($items) use (&$array) {
@@ -109,11 +115,12 @@ abstract class BaseRepository
 
     public function update(string|int $id, array $data): bool
     {
-        $query = $this->find($id);
-        if ($query) {
-            $query->update($data);
+        try {
+            $query = $this->find($id, ['id']);
+            $query?->update($data);
 
             return true;
+        } catch (Exception) {
         }
 
         return false;
@@ -122,7 +129,7 @@ abstract class BaseRepository
     public function delete(string|int $id): bool
     {
         try {
-            $query = $this->find($id);
+            $query = $this->find($id, ['id']);
             $query?->delete();
 
             return true;

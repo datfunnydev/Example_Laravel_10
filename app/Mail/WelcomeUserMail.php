@@ -17,6 +17,7 @@ class WelcomeUserMail implements ShouldQueue
 
     public function __construct(array $data)
     {
+        $this->onQueue('VerifyEmailMail');
         $this->data = $data;
     }
 
